@@ -1,0 +1,16 @@
+Found: C:\Users\aarol\Documents\Code\android\app\build
+Found: C:\Users\aarol\Documents\Code\android\build
+Found: C:\Users\aarol\Documents\Code\dart\clone\fast_immutable_collections\example\benchmark\benchmark_app\build
+Found: C:\Users\aarol\Documents\Code\dart\dart_reddit\.dart_tool\build
+Found: C:\Users\aarol\Documents\Code\dart\flutter_reddit\.dart_tool\build
+Found: C:\Users\aarol\Documents\Code\dart\flutter_reddit\build
+Found: C:\Users\aarol\Documents\Code\flutter\dart_trivia\build
+Found: C:\Users\aarol\Documents\Code\go\console\build
+Found: C:\Users\aarol\Documents\Code\rust\adbc\target\debug\build
+Found: C:\Users\aarol\Documents\Code\rust\bevy-2048\target\debug\build
+Found: C:\Users\aarol\Documents\Code\rust\bevy_physics\target\debug\build
+Found: C:\Users\aarol\Documents\Code\rust\company\target\debug\build
+Found: C:\Users\aarol\Documents\Code\rust\company\target\rls\debug\build
+Found: C:\Users\aarol\Documents\Code\rust\minigrep\target\debug\build
+Found: C:\Users\aarol\Documents\Code\rust\minigrep\target\rls\debug\build
+Found: C:\Users\aarol\Documents\Code\rust\my_bevy_game\target\debug\build

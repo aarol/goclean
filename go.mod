@@ -2,12 +2,13 @@ module github.com/aarol/goclean
 
 go 1.17
 
-require github.com/karrick/godirwalk v1.16.1
-
-require github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
+require (
+	github.com/jroimartin/gocui v0.5.0
+	github.com/karrick/godirwalk v1.16.1
+)
 
 require (
-	github.com/gizak/termui/v3 v3.1.0
-	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/nsf/termbox-go v1.1.1 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 )

@@ -48,7 +48,8 @@ func layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Frame = false
-		v.Autoscroll = true
+		v.Highlight = true
+		v.SelBgColor = gocui.ColorRed
 	}
 	g.SetCurrentView("list")
 	return nil
@@ -74,31 +75,28 @@ func updateList(g *gocui.Gui) {
 }
 
 // TODO: Fix cursor overflow at bottom
-func moveHighlight(v *gocui.View, dy int) error {
-	if v != nil {
-		// Get the size and position of the view.
-		_, y := v.Size()
-		ox, oy := v.Origin()
-
-		bottomY := strings.Count(v.ViewBuffer(), "\n") - y - 1
-		// If we're at the bottom...
-		if oy+dy > bottomY {
-			// Set autoscroll to normal again.
-			v.Autoscroll = true
-
-			// Move cursor towards the bottom.
-			// Only if cursor is not at the bottom already.
-			_, cy := v.Cursor()
-			v.SetCursor(0, cy+dy)
-		} else {
-			// Set autoscroll to false and scroll.
-			v.Autoscroll = false
-			v.SetOrigin(ox, oy+dy)
+func moveHighlight(dy int) func(g *gocui.Gui, v *gocui.View) error {
+	return func(g *gocui.Gui, v *gocui.View) error {
+		if v != nil && lineBelow(v, dy) {
+			v.MoveCursor(0, dy, false)
 		}
-
-		v.Highlight = true
-		v.SelBgColor = gocui.ColorRed
+		return nil
 	}
+}
+
+func lineBelow(v *gocui.View, dy int) bool {
+	_, cy := v.Cursor()
+	line, err := v.Line(cy + dy)
+	return err == nil && line != ""
+}
+
+func deletePath(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
+	l, err := v.Line(cy)
+	if err != nil {
+		return err
+	}
+	log.Println(l)
 	return nil
 }
 
@@ -107,20 +105,29 @@ func initKeybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		return err
 	}
-	// UP arrow
-	if err := g.SetKeybinding("list", gocui.KeyArrowUp, gocui.ModNone,
-		func(g *gocui.Gui, v *gocui.View) error {
-			moveHighlight(v, -1)
-			return nil
-		}); err != nil {
+	// UP
+	if err := g.SetKeybinding("list", gocui.KeyArrowUp, gocui.ModNone, moveHighlight(-1)); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("list", 'j', gocui.ModNone, moveHighlight(-1)); err != nil {
 		return err
 	}
 	// DOWN arrow
-	if err := g.SetKeybinding("list", gocui.KeyArrowDown, gocui.ModNone,
-		func(g *gocui.Gui, v *gocui.View) error {
-			moveHighlight(v, 1)
-			return nil
-		}); err != nil {
+	if err := g.SetKeybinding("list", gocui.KeyArrowDown, gocui.ModNone, moveHighlight(1)); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("list", 'k', gocui.ModNone, moveHighlight(1)); err != nil {
+		return err
+	}
+
+	// DELETE
+	if err := g.SetKeybinding("list", gocui.KeyEnter, gocui.ModNone, deletePath); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("list", gocui.KeyDelete, gocui.ModNone, deletePath); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("list", gocui.KeySpace, gocui.ModNone, deletePath); err != nil {
 		return err
 	}
 	return nil

@@ -1,25 +1,28 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/karrick/godirwalk"
 )
 
 func Traverse(ch chan string) {
-	// dir, err := os.UserHomeDir()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	// Get current working directory
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer close(ch)
 
-	godirwalk.Walk("C:\\Users\\aarol\\Documents\\Code", &godirwalk.Options{
+	// Scan the file tree starting from current working directory
+	godirwalk.Walk(dir, &godirwalk.Options{
 		Callback: func(osPathname string, directoryEntry *godirwalk.Dirent) error {
-			if directoryEntry.Name() == "node_modules" {
-				return godirwalk.SkipThis
-			}
 			if directoryEntry.IsDir() && directoryEntry.Name() == os.Args[1] {
 				ch <- osPathname
+				return godirwalk.SkipThis
+			}
+			if directoryEntry.Name() == "node_modules" {
 				return godirwalk.SkipThis
 			}
 
@@ -28,13 +31,4 @@ func Traverse(ch chan string) {
 		FollowSymbolicLinks: false,
 		Unsorted:            true,
 	})
-}
-
-func contains(slice []string, in string) bool {
-	for _, v := range slice {
-		if v == in {
-			return true
-		}
-	}
-	return false
 }

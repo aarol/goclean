@@ -34,10 +34,9 @@ func Traverse(ch chan DirEntry) {
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	dir := "C:\\Users\\aarol"
+	dir := "C:\\Users\\aarol\\Documents"
 	searchDirs := Context.Args()
 	ignoreDirs := strings.Split(Context.String("exclude"), " ")
-
 	defer close(ch)
 
 	// Scan the file tree starting from current working directory

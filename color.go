@@ -11,7 +11,15 @@ const (
 	white  = "0;37"
 )
 
-func SizeColor(size int64) string {
+func ANSIColor(color string) string {
+	return "\033[" + color + "m"
+}
+
+func ANSINormal() string {
+	return "\033[0m"
+}
+
+func ColorFromSize(size int64) string {
 
 	var pow = func(b, e int64) int64 {
 		var out int64 = 1
@@ -34,5 +42,5 @@ func SizeColor(size int64) string {
 	} else {
 		color = purple
 	}
-	return "\033[" + color + "m"
+	return ANSIColor(color)
 }

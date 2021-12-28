@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/dustin/go-humanize"
 	"github.com/jroimartin/gocui"
@@ -22,9 +23,10 @@ func main() {
 		cli.StringFlag{
 			Name:  "exclude, e",
 			Value: "node_modules .git",
-			Usage: "Exclude paths",
+			Usage: "Space separated list of directories to exclude searching into",
 		},
 	}
+	app.UsageText = "goclean.exe [options] [directories to search for]"
 	app.Action = func(c *cli.Context) error {
 		Context = c
 		g, err := gocui.NewGui(gocui.OutputNormal)
@@ -91,7 +93,7 @@ func updateList(g *gocui.Gui) {
 			}
 			size := humanize.Bytes(uint64(e.Size))
 			spaces := strings.Repeat(" ", 7-len(size))
-			fmt.Fprint(v, SizeColor(e.Size), size, "\033[0m", spaces)
+			fmt.Fprint(v, ColorFromSize(e.Size), size, ANSINormal(), spaces)
 			fmt.Fprintln(v, e.Path)
 			return nil
 		})
@@ -119,6 +121,7 @@ func deletePath(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
+	time.Sleep(1 * time.Second)
 	return nil
 }
 

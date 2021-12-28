@@ -6,31 +6,49 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dustin/go-humanize"
 	"github.com/jroimartin/gocui"
+	"github.com/urfave/cli"
 )
+
+var Context *cli.Context
 
 func main() {
 
-	if len(os.Args) < 2 {
-		log.Panicln("Please provide a directory to search")
+	app := cli.NewApp()
+	app.Name = "Goclean"
+	app.Usage = "Clean up your filesystem"
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:  "exclude, e",
+			Value: "node_modules .git",
+			Usage: "Exclude paths",
+		},
 	}
+	app.Action = func(c *cli.Context) error {
+		Context = c
+		g, err := gocui.NewGui(gocui.OutputNormal)
+		if err != nil {
+			return err
+		}
+		defer g.Close()
 
-	g, err := gocui.NewGui(gocui.OutputNormal)
+		g.SetManagerFunc(layout)
+
+		go updateList(g)
+
+		if err := initKeybindings(g); err != nil {
+			return err
+		}
+
+		if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+			return err
+		}
+		return nil
+	}
+	err := app.Run(os.Args)
 	if err != nil {
-		log.Panicln(err)
-	}
-	defer g.Close()
-
-	g.SetManagerFunc(layout)
-
-	go updateList(g)
-
-	if err := initKeybindings(g); err != nil {
-		log.Panicln(err)
-	}
-
-	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-		log.Panicln(err)
+		log.Fatal(err)
 	}
 }
 
@@ -41,7 +59,7 @@ func layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Frame = false
-		fmt.Fprintln(v, "Searching directories:", strings.Join(os.Args[1:], ", "))
+		fmt.Fprintln(v, "Searching directories:", strings.Join(Context.Args(), ", "))
 	}
 	if v, err := g.SetView("list", 0, 2, maxX, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
@@ -60,21 +78,26 @@ func quit(g *gocui.Gui, v *gocui.View) error {
 }
 
 func updateList(g *gocui.Gui) {
-	ch := make(chan string)
+	ch := make(chan DirEntry)
 	go Traverse(ch)
-	for path := range ch {
+	for entry := range ch {
+		// Copy path so that it isn't overwritten
+		// Because new path can be received before update executes
+		e := entry
 		g.Update(func(g *gocui.Gui) error {
 			v, err := g.View("list")
 			if err != nil {
 				return err
 			}
-			fmt.Fprintln(v, path)
+			size := humanize.Bytes(uint64(e.Size))
+			spaces := strings.Repeat(" ", 7-len(size))
+			fmt.Fprint(v, SizeColor(e.Size), size, "\033[0m", spaces)
+			fmt.Fprintln(v, e.Path)
 			return nil
 		})
 	}
 }
 
-// TODO: Fix cursor overflow at bottom
 func moveHighlight(dy int) func(g *gocui.Gui, v *gocui.View) error {
 	return func(g *gocui.Gui, v *gocui.View) error {
 		if v != nil && lineBelow(v, dy) {
@@ -92,11 +115,10 @@ func lineBelow(v *gocui.View, dy int) bool {
 
 func deletePath(g *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()
-	l, err := v.Line(cy)
+	_, err := v.Line(cy)
 	if err != nil {
 		return err
 	}
-	log.Println(l)
 	return nil
 }
 
@@ -109,14 +131,15 @@ func initKeybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("list", gocui.KeyArrowUp, gocui.ModNone, moveHighlight(-1)); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("list", 'j', gocui.ModNone, moveHighlight(-1)); err != nil {
+	if err := g.SetKeybinding("list", 'k', gocui.ModNone, moveHighlight(-1)); err != nil {
 		return err
 	}
+
 	// DOWN arrow
 	if err := g.SetKeybinding("list", gocui.KeyArrowDown, gocui.ModNone, moveHighlight(1)); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("list", 'k', gocui.ModNone, moveHighlight(1)); err != nil {
+	if err := g.SetKeybinding("list", 'j', gocui.ModNone, moveHighlight(1)); err != nil {
 		return err
 	}
 

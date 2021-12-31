@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/karrick/godirwalk"
 )
@@ -28,15 +27,13 @@ func getDirectorySize(path string) (int64, error) {
 
 }
 
-func Traverse(ch chan DirEntry) {
+func Traverse(searchDirs, ignoreDirs []string, ch chan DirEntry) {
 	// Get current working directory
 	// dir, err := os.Getwd()
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
 	dir := "C:\\Users\\aarol\\Documents"
-	searchDirs := Context.Args()
-	ignoreDirs := strings.Split(Context.String("exclude"), " ")
 	defer close(ch)
 
 	// Scan the file tree starting from current working directory

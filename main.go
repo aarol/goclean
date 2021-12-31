@@ -6,38 +6,66 @@ import (
 	"os"
 	"strings"
 
+	"github.com/aarol/goclean/fs"
+	"github.com/aarol/goclean/list"
+
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/urfave/cli"
 )
 
+var (
+	footerHeight = 3
+	headerHeight = 2
+)
+
+type finishedMsg struct{}
+
 type model struct {
+	list        list.Model
+	spinner     spinner.Model
+	finished    bool
 	searchDirs  []string
 	excludeDirs []string
 	directories []string
-	sub         chan DirEntry
-	cursor      int
+	sub         chan fs.DirEntry
 }
 
 func initialModel(c *cli.Context) model {
+	s := spinner.NewModel()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	return model{
 		directories: []string{},
-		sub:         make(chan DirEntry),
+		sub:         make(chan fs.DirEntry),
 		searchDirs:  c.Args(),
 		excludeDirs: strings.Split(c.String("exclude"), " "),
+		list: list.Model{
+			Data: []fs.DirEntry{},
+		},
+		spinner: s,
 	}
 }
 
 func listenToSearch(m model) tea.Cmd {
 	return func() tea.Msg {
-		Traverse(m.searchDirs, m.excludeDirs, m.sub)
-		log.Println("Traversing")
-		return nil
+		ch := make(chan fs.DirEntry)
+
+		go fs.Traverse(m.searchDirs, m.excludeDirs, ch)
+		for v := range ch {
+			m.sub <- v
+		}
+		return finishedMsg{}
 	}
 }
 
-func waitForDirectory(sub chan DirEntry) tea.Cmd {
+func waitForDirectory(sub chan fs.DirEntry) tea.Cmd {
 	return func() tea.Msg {
-		return <-sub
+		log.Println("Waiting for directory")
+		e := <-sub
+		log.Println("Got directory")
+		return e
 	}
 }
 
@@ -45,69 +73,60 @@ func (m model) Init() tea.Cmd {
 	return tea.Batch(
 		listenToSearch(m),
 		waitForDirectory(m.sub),
+		spinner.Tick,
 	)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
-	// Is it a key press?
 	case tea.KeyMsg:
-
-		// Cool, what was the actual key pressed?
 		switch msg.String() {
-
-		// These keys should exit the program.
-		case "ctrl+c", "q":
+		case "q", "ctrl+c":
 			return m, tea.Quit
-
-		// The "up" and "k" keys move the cursor up
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-
-		// The "down" and "j" keys move the cursor down
-		case "down", "j":
-			if m.cursor < len(m.directories)-1 {
-				m.cursor++
-			}
-
 		}
 
-	case DirEntry:
-		if msg.Path != "" {
-			m.directories = append(m.directories, msg.Path)
+	case tea.WindowSizeMsg:
+		log.Println(msg.Height, msg.Width)
+		newMsg := tea.WindowSizeMsg{
+			Height: msg.Height - footerHeight - headerHeight,
+			Width:  msg.Width,
 		}
-		return m, waitForDirectory(m.sub)
+		var cmd tea.Cmd
+		m.list, cmd = m.list.Update(newMsg)
+		return m, cmd
+
+	case fs.DirEntry:
+		var cmd tea.Cmd
+		m.list, cmd = m.list.Update(msg)
+		return m, tea.Batch(cmd, waitForDirectory(m.sub))
+
+	case finishedMsg:
+		m.finished = true
+		return m, nil
+	case spinner.TickMsg:
+		if !m.finished {
+			var cmd tea.Cmd
+			m.spinner, cmd = m.spinner.Update(msg)
+			return m, cmd
+		} else {
+			log.Println("Tick after finished")
+		}
 	}
-	// Return the updated model to the Bubble Tea runtime for processing.
-	// Note that we're not returning a command.
 	return m, nil
 }
 
 func (m model) View() string {
-	// The header
-	s := "Searching for directories: " + strings.Join(m.searchDirs, ", ") + "\n\n"
-
-	// Iterate over our choices
-	for i, dir := range m.directories {
-
-		// Is the cursor pointing at this choice?
-		cursor := " " // no cursor
-		if m.cursor == i {
-			cursor = ">" // cursor!
-		}
-
-		// Render the row
-		s += fmt.Sprintf("%s %s\n", cursor, dir)
+	str := ""
+	if !m.finished {
+		dirs := strings.Join(m.searchDirs, ", ")
+		str += fmt.Sprintf("%s Scanning directories %s\n", m.spinner.View(), dirs)
+	} else {
+		str += "Searched all directories\n"
 	}
 
-	// The footer
-	s += "\nPress q to quit.\n"
-
-	// Send the UI for rendering
-	return s
+	str += "\n" + m.list.View()
+	return str
 }
 
 func main() {
@@ -125,7 +144,13 @@ func main() {
 	app.UsageText = "goclean.exe [options] [directories to search for]"
 	app.Action = func(c *cli.Context) error {
 
-		p := tea.NewProgram(initialModel(c))
+		f, err := tea.LogToFile("debug.log", "")
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		p := tea.NewProgram(initialModel(c), tea.WithAltScreen())
 		if err := p.Start(); err != nil {
 			return err
 		}

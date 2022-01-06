@@ -16,9 +16,10 @@ type Model struct {
 
 	visibleData []fs.DirEntry
 	// Last index that is visible at a time, or the height
-	maxIndex int
-	index    int
-	init     bool
+	visibleMax   int
+	visibleStart int
+	index        int
+	init         bool
 }
 
 func (m Model) View() string {
@@ -44,44 +45,60 @@ func (m Model) View() string {
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.maxIndex = msg.Height
+		m.visibleMax = msg.Height
 		m.initData()
 	case tea.KeyMsg:
 		switch msg.String() {
-
-		case "down":
+		case "down", "j":
 			m.moveDown()
-		case "up":
+		case "up", "k":
 			m.moveUp()
 		}
 	case fs.DirEntry:
-		m.updateData(msg)
+		m.addData(msg)
 	}
 	return m, nil
 }
 
-func (m *Model) SetHeight(h int) {
-	m.maxIndex = h
+func (m *Model) moveDown() {
+	if m.index < m.visibleMax {
+		m.index++
+	}
+	if m.index >= len(m.visibleData) {
+		m.shiftVisible(1)
+	}
+	log.Println(m.index)
 }
 
-func (m *Model) moveDown() {
-	m.index++
+func (m *Model) shiftVisible(d int) {
+	log.Println(m.visibleStart, m.visibleMax, d, len(m.Data))
+	if m.visibleStart+m.visibleMax+d < len(m.Data) && m.visibleStart+d > 0 {
+		m.visibleStart += d
+		m.visibleData = m.Data[m.visibleStart : m.visibleStart+m.visibleMax]
+	}
 }
 
 func (m *Model) moveUp() {
-	m.index--
+	if m.index > 0 {
+		m.index--
+	}
+	if m.index < m.visibleStart {
+		m.shiftVisible(-1)
+	}
+	log.Println(m.index)
 }
 
-func (m *Model) updateData(d fs.DirEntry) {
+func (m *Model) addData(d fs.DirEntry) {
+
+	if len(m.visibleData) < m.visibleMax {
+		m.visibleData = append(m.visibleData, d)
+	}
 	m.Data = append(m.Data, d)
-	log.Println(m.Data)
-	m.visibleData = m.Data
 }
 
 func (m *Model) initData() {
-	log.Println("initData")
-	if m.maxIndex < len(m.Data) {
-		m.visibleData = m.Data[:m.maxIndex]
+	if m.visibleMax < len(m.Data) {
+		m.visibleData = m.Data[:m.visibleMax]
 	} else {
 		m.visibleData = m.Data[:len(m.Data)]
 	}

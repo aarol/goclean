@@ -62,9 +62,7 @@ func listenToSearch(m model) tea.Cmd {
 
 func waitForDirectory(sub chan fs.DirEntry) tea.Cmd {
 	return func() tea.Msg {
-		log.Println("Waiting for directory")
 		e := <-sub
-		log.Println("Got directory")
 		return e
 	}
 }
@@ -84,10 +82,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		default:
+			// send unregistered input to list
+			var cmd tea.Cmd
+			m.list, cmd = m.list.Update(msg)
+			return m, cmd
 		}
 
 	case tea.WindowSizeMsg:
-		log.Println(msg.Height, msg.Width)
 		newMsg := tea.WindowSizeMsg{
 			Height: msg.Height - footerHeight - headerHeight,
 			Width:  msg.Width,
@@ -109,8 +111,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			var cmd tea.Cmd
 			m.spinner, cmd = m.spinner.Update(msg)
 			return m, cmd
-		} else {
-			log.Println("Tick after finished")
 		}
 	}
 	return m, nil

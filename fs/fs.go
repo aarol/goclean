@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 
@@ -47,7 +46,6 @@ func Traverse(searchDirs, ignoreDirs []string, ch chan DirEntry) {
 						return err
 					}
 					ch <- DirEntry{Path: osPathname, Size: size}
-					log.Println("Skipping directory ", osPathname)
 					return godirwalk.SkipThis
 				}
 				if contains(entry.Name(), ignoreDirs) {

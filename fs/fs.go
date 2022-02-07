@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 
@@ -8,8 +9,9 @@ import (
 )
 
 type DirEntry struct {
-	Path string
-	Size int64
+	Path    string
+	Size    int64
+	Deleted bool
 }
 
 func getDirectorySize(path string) (int64, error) {
@@ -29,11 +31,11 @@ func getDirectorySize(path string) (int64, error) {
 
 func Traverse(searchDirs, ignoreDirs []string, ch chan DirEntry) {
 	// Get current working directory
-	// dir, err := os.Getwd()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	dir := "C:\\Users\\aarol\\Documents"
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// dir := "C:\\Users\\aarol\\Documents\\Code"
 	defer close(ch)
 
 	// Scan the file tree starting from current working directory
@@ -58,6 +60,10 @@ func Traverse(searchDirs, ignoreDirs []string, ch chan DirEntry) {
 		FollowSymbolicLinks: false,
 		Unsorted:            true,
 	})
+}
+
+func Delete(path string) error {
+	return os.RemoveAll(path)
 }
 
 func contains(e string, s []string) bool {

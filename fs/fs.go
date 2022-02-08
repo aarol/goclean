@@ -40,19 +40,23 @@ func Traverse(searchDirs, ignoreDirs []string, ch chan DirEntry) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// dir := "C:\\Users\\aarol\\Documents\\Code"
+	// dir := "C:\\Users\\aarol\\"
 	defer close(ch)
 
 	// Scan the file tree starting from current working directory
+	// Don't return err because it stops the walk
+	// Instead just skip the directory
 	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return err
+			log.Println(err)
+			return filepath.SkipDir
 		}
 		if d.IsDir() {
 			if contains(d.Name(), searchDirs) {
 				size, err := getDirectorySize(path)
 				if err != nil {
-					return err
+					log.Println(err)
+					return filepath.SkipDir
 				}
 				ch <- DirEntry{Path: path, Size: size}
 				return filepath.SkipDir

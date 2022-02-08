@@ -1,11 +1,10 @@
 package fs
 
 import (
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
-
-	"github.com/karrick/godirwalk"
 )
 
 type DirEntry struct {
@@ -16,17 +15,23 @@ type DirEntry struct {
 
 func getDirectorySize(path string) (int64, error) {
 	var size int64
-	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() {
+		if !d.IsDir() {
+			info, err := d.Info()
+			if err != nil {
+				return err
+			}
 			size += info.Size()
 		}
 		return err
 	})
-	return size, err
-
+	if err != nil {
+		return 0, err
+	}
+	return size, nil
 }
 
 func Traverse(searchDirs, ignoreDirs []string, ch chan DirEntry) {
@@ -39,26 +44,24 @@ func Traverse(searchDirs, ignoreDirs []string, ch chan DirEntry) {
 	defer close(ch)
 
 	// Scan the file tree starting from current working directory
-	godirwalk.Walk(dir, &godirwalk.Options{
-		Callback: func(osPathname string, entry *godirwalk.Dirent) error {
-			if entry.IsDir() {
-				if contains(entry.Name(), searchDirs) {
-					size, err := getDirectorySize(osPathname)
-					if err != nil {
-						return err
-					}
-					ch <- DirEntry{Path: osPathname, Size: size}
-					return godirwalk.SkipThis
+	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			if contains(d.Name(), searchDirs) {
+				size, err := getDirectorySize(path)
+				if err != nil {
+					return err
 				}
-				if contains(entry.Name(), ignoreDirs) {
-					return godirwalk.SkipThis
-				}
+				ch <- DirEntry{Path: path, Size: size}
+				return filepath.SkipDir
 			}
-
-			return nil
-		},
-		FollowSymbolicLinks: false,
-		Unsorted:            true,
+			if contains(d.Name(), ignoreDirs) {
+				return filepath.SkipDir
+			}
+		}
+		return err
 	})
 }
 

@@ -9,9 +9,12 @@ import (
 )
 
 var (
-	titleStyle      = lipgloss.NewStyle().MarginBottom(1)
-	footerStyle     = lipgloss.NewStyle().Margin(1, 0)
 	boldTextStyle   = lipgloss.NewStyle().Bold(true)
+	titleStyle      = lipgloss.NewStyle().MarginBottom(1)
+	searchStyle     = lipgloss.NewStyle()
+	sepStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#c6c6c6"))
+	cleanedStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#7cf4bb"))
+	footerStyle     = lipgloss.NewStyle().Margin(1, 0)
 	selectedStyle   = boldTextStyle.Copy().Background(lipgloss.Color("205")).Foreground(lipgloss.Color("#000000"))
 	unselectedStyle = boldTextStyle.Copy()
 	deletedStyle    = lipgloss.NewStyle().Background(lipgloss.Color("#ea45b1")).MarginRight(1)
@@ -60,15 +63,18 @@ func viewportContents(m model) string {
 }
 
 func (m model) headerView() string {
-	var s string
+	var search string
 	if !m.searchFinished {
 		dirs := strings.Join(m.searchDirs, ", ")
-		s = fmt.Sprintf("%s Scanning directories %s", m.spinner.View(), dirs)
+		search = searchStyle.Render(fmt.Sprintf("%s Scanning directories %s • ", m.spinner.View(), dirs))
 	} else {
-		s = "Searched all directories "
+		s := fmt.Sprintf("Found %d directories • ", len(m.directories))
+		search = searchStyle.Copy().Inherit(sepStyle).Render(s)
 	}
 
-	s += lipgloss.NewStyle().Foreground(lipgloss.Color("#7cf4bb")).Width(20).Align(lipgloss.Center).Render("Space saved:")
+	cleaned := cleanedStyle.Render("Cleaned: " + HumanizeBytes(m.bytesSaved))
+
+	s := lipgloss.JoinHorizontal(lipgloss.Top, search, cleaned)
 
 	return titleStyle.Render(s)
 }

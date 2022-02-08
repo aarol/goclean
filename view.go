@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -19,7 +18,7 @@ var (
 	existingStyle   = lipgloss.NewStyle().Background(lipgloss.Color("#b3f5a3")).MarginRight(1)
 )
 
-func viewData(m model) string {
+func viewportContents(m model) string {
 	s := ""
 	var pathStyle lipgloss.Style
 	var sizeStyle lipgloss.Style
@@ -36,21 +35,21 @@ func viewData(m model) string {
 		} else {
 			pathStyle = unselectedStyle
 			sizeStyle = unselectedStyle.Copy().
-				// Foreground(ColorFromSize(file.Size))
-				Foreground(lipgloss.Color("#000000"))
+				Foreground(ColorFromSize(file.Size))
 		}
 
 		box := boxStyle.Render(" ")
 
-		log.Println(sizeStyle.Render(HumanizeBytes(file.Size)))
 		fileSize := sizeStyle.Render(HumanizeBytes(file.Size))
+
+		directoryWidth := m.viewport.Width - lipgloss.Width(fileSize) - lipgloss.Width(box)
 
 		directoryItem :=
 			pathStyle.Copy().
-				Width(m.viewport.Width - lipgloss.Width(fileSize) - lipgloss.Width(box)).
+				Width(directoryWidth).
 				Render(
 					truncate.StringWithTail(
-						file.Path, uint(m.viewport.Width-lipgloss.Width(fileSize)-lipgloss.Width(box)), "..."),
+						file.Path, uint(directoryWidth), "..."),
 				)
 
 		row := lipgloss.JoinHorizontal(lipgloss.Top, box, directoryItem, fileSize)
@@ -66,13 +65,16 @@ func (m model) headerView() string {
 		dirs := strings.Join(m.searchDirs, ", ")
 		s = fmt.Sprintf("%s Scanning directories %s", m.spinner.View(), dirs)
 	} else {
-		s = "Searched all directories"
+		s = "Searched all directories "
 	}
+
+	s += lipgloss.NewStyle().Foreground(lipgloss.Color("#7cf4bb")).Width(20).Align(lipgloss.Center).Render("Space saved:")
+
 	return titleStyle.Render(s)
 }
 
 func (m model) footerView() string {
-	return footerStyle.Render("Press q to quit")
+	return footerStyle.Render(m.help.View(m.keys))
 }
 
 func (m model) View() string {

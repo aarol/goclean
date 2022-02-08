@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/aarol/goclean/fs"
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/charmbracelet/lipgloss"
@@ -11,6 +12,7 @@ import (
 )
 
 type model struct {
+	keys           keyMap
 	viewportReady  bool
 	searchFinished bool
 	searchDirs     []string
@@ -19,7 +21,9 @@ type model struct {
 	sub            chan fs.DirEntry
 	viewport       viewport.Model
 	spinner        spinner.Model
+	help           help.Model
 	cursor         int
+	height         int
 }
 
 func initialModel(c *cli.Context) model {
@@ -27,10 +31,12 @@ func initialModel(c *cli.Context) model {
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	return model{
+		keys:        keys,
 		directories: []fs.DirEntry{},
 		sub:         make(chan fs.DirEntry),
 		searchDirs:  c.Args(),
 		excludeDirs: strings.Split(c.String("exclude"), " "),
+		help:        help.New(),
 		spinner:     s,
 	}
 }

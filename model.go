@@ -22,6 +22,7 @@ type model struct {
 	viewport       viewport.Model
 	spinner        spinner.Model
 	help           help.Model
+	bytesSaved     int64
 	cursor         int
 	height         int
 }

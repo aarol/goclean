@@ -138,6 +138,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case deletedMsg:
 		m.directories[msg].Deleted = true
+		m.bytesSaved += m.directories[msg].Size
 		m.viewport.SetContent(viewportContents(m))
 
 	case spinner.TickMsg:

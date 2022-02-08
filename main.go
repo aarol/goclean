@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"errors"
+	"fmt"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -22,6 +23,9 @@ func main() {
 	}
 	app.UsageText = "goclean.exe [options] [directories to search for]"
 	app.Action = func(c *cli.Context) error {
+		if len(c.Args()) == 0 {
+			return errors.New("no directories to search")
+		}
 
 		f, err := tea.LogToFile("debug.log", "")
 		if err != nil {
@@ -30,14 +34,15 @@ func main() {
 		defer f.Close()
 
 		p := tea.NewProgram(initialModel(c), tea.WithAltScreen())
-		if err := p.Start(); err != nil {
+		m, err := p.StartReturningModel()
+		if err != nil {
 			return err
 		}
 
-		return nil
+		return fmt.Errorf("space saved: %s", HumanizeBytes(m.(model).bytesSaved))
 	}
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 }

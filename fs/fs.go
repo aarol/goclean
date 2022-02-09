@@ -17,7 +17,7 @@ func pow(n float64) int64 {
 var dirs = []DirEntry{
 	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\old\\build", Size: pow(3.1)},
 	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\blog\\build", Size: pow(1.2)},
-	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\practise\\build", Size: pow(2.1)},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\practise\\build", Size: pow(2.76)},
 	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\example\\build", Size: pow(3.001)},
 	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\blog-old\\build", Size: pow(0.11)},
 	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\website\\build", Size: pow(0.5)},

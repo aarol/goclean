@@ -8,9 +8,10 @@ import (
 )
 
 type DirEntry struct {
-	Path    string
-	Size    int64
-	Deleted bool
+	Path               string
+	Size               int64
+	Deleted            bool
+	DeletionInProgress bool
 }
 
 func getDirectorySize(path string) (int64, error) {

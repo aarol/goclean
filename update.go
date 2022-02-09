@@ -98,8 +98,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.SetContent(viewportContents(m))
 
 		case key.Matches(msg, m.keys.Delete):
-			log.Println("Delete", m.directories[m.cursor].Path)
-			return m, removeDirectory(m.cursor, m.directories[m.cursor].Path)
+			// Check if cursor in bounds (don't allow when count of directories is 0)
+			if m.cursor < len(m.directories) {
+				log.Println("Delete", m.directories[m.cursor].Path)
+				return m, removeDirectory(m.cursor, m.directories[m.cursor].Path)
+			}
 
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll

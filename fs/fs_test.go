@@ -51,4 +51,9 @@ func TestPopulateDirectories(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	path = filepath.Join(filepath.Dir(wd), "other", "example")
+	os.MkdirAll(path, os.ModePerm)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

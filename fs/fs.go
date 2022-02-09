@@ -1,10 +1,7 @@
 package fs
 
 import (
-	"io/fs"
-	"log"
-	"os"
-	"path/filepath"
+	"math"
 )
 
 type DirEntry struct {
@@ -13,71 +10,26 @@ type DirEntry struct {
 	Deleted bool
 }
 
-func getDirectorySize(path string) (int64, error) {
-	var size int64
-	err := filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() {
-			info, err := d.Info()
-			if err != nil {
-				return err
-			}
-			size += info.Size()
-		}
-		return err
-	})
-	if err != nil {
-		return 0, err
-	}
-	return size, nil
+func pow(n float64) int64 {
+	return int64(math.Pow(1024, n))
+}
+
+var dirs = []DirEntry{
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\old\\build", Size: pow(3.1)},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\blog\\build", Size: pow(1.2)},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\practise\\build", Size: pow(2.1)},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\example\\build", Size: pow(3.001)},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\blog-old\\build", Size: pow(0.11)},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\website\\build", Size: pow(0.5)},
 }
 
 func Traverse(searchDirs, ignoreDirs []string, ch chan DirEntry) {
-	// Get current working directory
-	dir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-	// dir := "C:\\Users\\aarol\\"
 	defer close(ch)
-
-	// Scan the file tree starting from current working directory
-	// Don't return err because it stops the walk
-	// Instead just skip the directory
-	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			log.Println(err)
-			return filepath.SkipDir
-		}
-		if d.IsDir() {
-			if contains(d.Name(), searchDirs) {
-				size, err := getDirectorySize(path)
-				if err != nil {
-					log.Println(err)
-					return filepath.SkipDir
-				}
-				ch <- DirEntry{Path: path, Size: size}
-				return filepath.SkipDir
-			}
-			if contains(d.Name(), ignoreDirs) {
-				return filepath.SkipDir
-			}
-		}
-		return err
-	})
+	for _, dir := range dirs {
+		ch <- dir
+	}
 }
 
 func Delete(path string) error {
-	return os.RemoveAll(path)
-}
-
-func contains(e string, s []string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
+	return nil
 }

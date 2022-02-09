@@ -12,13 +12,13 @@ var (
 	boldTextStyle   = lipgloss.NewStyle().Bold(true)
 	titleStyle      = lipgloss.NewStyle().MarginBottom(1)
 	searchStyle     = lipgloss.NewStyle()
-	sepStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#c6c6c6"))
-	cleanedStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#7cf4bb"))
+	sepStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("249"))
+	cleanedStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("121"))
 	footerStyle     = lipgloss.NewStyle().Margin(1, 0)
-	selectedStyle   = boldTextStyle.Copy().Background(lipgloss.Color("205")).Foreground(lipgloss.Color("#000000"))
+	selectedStyle   = boldTextStyle.Copy().Background(lipgloss.Color("205")).Foreground(lipgloss.Color("#000"))
 	unselectedStyle = boldTextStyle.Copy()
-	deletedStyle    = lipgloss.NewStyle().Background(lipgloss.Color("#ea45b1")).MarginRight(1)
-	existingStyle   = lipgloss.NewStyle().Background(lipgloss.Color("#b3f5a3")).MarginRight(1)
+	deletedStyle    = lipgloss.NewStyle().Background(lipgloss.Color("205")).MarginRight(1)
+	existingStyle   = lipgloss.NewStyle().Background(lipgloss.Color("121")).MarginRight(1)
 )
 
 func viewportContents(m model) string {

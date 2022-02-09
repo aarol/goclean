@@ -9,16 +9,21 @@ import (
 )
 
 var (
-	boldTextStyle   = lipgloss.NewStyle().Bold(true)
-	titleStyle      = lipgloss.NewStyle().MarginBottom(1)
-	searchStyle     = lipgloss.NewStyle()
-	sepStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("249"))
-	cleanedStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("121"))
-	footerStyle     = lipgloss.NewStyle().Margin(1, 0)
-	selectedStyle   = boldTextStyle.Copy().Background(lipgloss.Color("205")).Foreground(lipgloss.Color("#000"))
-	unselectedStyle = boldTextStyle.Copy()
-	deletedStyle    = lipgloss.NewStyle().Background(lipgloss.Color("205")).MarginRight(1)
-	existingStyle   = lipgloss.NewStyle().Background(lipgloss.Color("121")).MarginRight(1)
+	headerStyle        = lipgloss.NewStyle().MarginBottom(1)
+	searchStyle        = lipgloss.NewStyle()
+	cleanedStatusStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("121"))
+	sepStyle           = lipgloss.NewStyle().Foreground(lipgloss.Color("249"))
+
+	boldTextStyle = lipgloss.NewStyle().Bold(true)
+
+	selectedPathStyle   = boldTextStyle.Copy().Background(lipgloss.Color("205")).Foreground(lipgloss.Color("#000"))
+	unselectedPathStyle = boldTextStyle.Copy()
+	deletedPathStyle    = lipgloss.NewStyle()
+
+	deletedIconStyle  = lipgloss.NewStyle().Background(lipgloss.Color("205")).MarginRight(1)
+	existingIconStyle = lipgloss.NewStyle().Background(lipgloss.Color("121")).MarginRight(1)
+
+	footerStyle = lipgloss.NewStyle().Margin(1, 0)
 )
 
 func viewportContents(m model) string {
@@ -27,19 +32,22 @@ func viewportContents(m model) string {
 	var sizeStyle lipgloss.Style
 	for i, file := range m.directories {
 		var boxStyle lipgloss.Style
+		// Box on the left of path
 		if file.Deleted {
-			boxStyle = deletedStyle
+			boxStyle = deletedIconStyle
 		} else {
-			boxStyle = existingStyle
+			boxStyle = existingIconStyle
 		}
 		if i == m.cursor {
-			pathStyle = selectedStyle
-			sizeStyle = selectedStyle
+			pathStyle = selectedPathStyle
+			sizeStyle = selectedPathStyle
 		} else {
-			pathStyle = unselectedStyle
-			sizeStyle = unselectedStyle.Copy().
+			pathStyle = unselectedPathStyle
+			sizeStyle = unselectedPathStyle.Copy().
 				Foreground(ColorFromSize(file.Size))
 		}
+		// Set boldness to true if file not deleted
+		pathStyle.Bold(!file.Deleted)
 
 		box := boxStyle.Render(" ")
 
@@ -72,11 +80,11 @@ func (m model) headerView() string {
 		search = searchStyle.Copy().Inherit(sepStyle).Render(s)
 	}
 
-	cleaned := cleanedStyle.Render("Cleaned: " + HumanizeBytes(m.bytesSaved))
+	cleaned := cleanedStatusStyle.Render("Cleaned: " + HumanizeBytes(m.bytesSaved))
 
 	s := lipgloss.JoinHorizontal(lipgloss.Top, search, cleaned)
 
-	return titleStyle.Render(s)
+	return headerStyle.Render(s)
 }
 
 func (m model) footerView() string {

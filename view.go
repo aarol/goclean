@@ -18,7 +18,6 @@ var (
 
 	selectedPathStyle   = boldTextStyle.Copy().Background(lipgloss.Color("205")).Foreground(lipgloss.Color("#000"))
 	unselectedPathStyle = boldTextStyle.Copy()
-	deletedPathStyle    = lipgloss.NewStyle()
 
 	deletedIconStyle  = lipgloss.NewStyle().Background(lipgloss.Color("205")).MarginRight(1)
 	existingIconStyle = lipgloss.NewStyle().Background(lipgloss.Color("121")).MarginRight(1)

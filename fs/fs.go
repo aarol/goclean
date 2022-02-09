@@ -5,9 +5,10 @@ import (
 )
 
 type DirEntry struct {
-	Path    string
-	Size    int64
-	Deleted bool
+	Path               string
+	Size               int64
+	Deleted            bool
+	DeletionInProgress bool
 }
 
 func pow(n float64) int64 {

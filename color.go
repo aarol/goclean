@@ -5,22 +5,21 @@ import (
 )
 
 const (
-	b  = lipgloss.Color("#bfdeaa")
-	kb = lipgloss.Color("#fac984")
-	mb = lipgloss.Color("#ff998e")
-	gb = lipgloss.Color("#ff7e91")
-	tb = lipgloss.Color("#ea45b1")
+	kb = 1024
+	mb = kb * 1024
+	gb = mb * 1024
+	tb = gb * 1024
 )
 
 func ColorFromSize(size int64) lipgloss.Color {
-	if size < 1024 {
-		return b
-	} else if size < 1_048_576 {
-		return kb
-	} else if size < 1_073_741_824 {
-		return mb
-	} else if size < 1_099_511_627_776 {
-		return gb
+	if size < kb {
+		return lipgloss.Color("#bfdeaa") // byte color
+	} else if size < mb {
+		return lipgloss.Color("#fac984") // kilobyte color
+	} else if size < gb {
+		return lipgloss.Color("#ff998e") // megabyte color
+	} else if size < tb {
+		return lipgloss.Color("#ff7e91") // gigabyte color
 	}
-	return tb
+	return lipgloss.Color("#ea45b1") // petabyte color
 }

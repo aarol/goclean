@@ -24,7 +24,7 @@ var dirs = []DirEntry{
 	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\website\\build", Size: pow(0.5)},
 }
 
-func Traverse(searchDirs, ignoreDirs []string, ch chan DirEntry) {
+func Traverse(searchPath string, searchDirs, ignoreDirs []string, searchAll bool, ch chan DirEntry) {
 	defer close(ch)
 	for _, dir := range dirs {
 		ch <- dir

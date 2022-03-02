@@ -28,9 +28,10 @@ func (m model) Init() tea.Cmd {
 func listenToSearch(m model) tea.Cmd {
 	return func() tea.Msg {
 		// Channel receives results, then immediately sends them to model channel
+		// Traverse will close the channel, so that we're able to send finishedMsg
 		ch := make(chan fs.DirEntry)
 
-		go fs.Traverse(m.searchDirs, m.excludeDirs, ch)
+		go fs.Traverse(m.searchPath, m.searchDirs, m.excludeDirs, m.searchAll, ch)
 		for v := range ch {
 			m.sub <- v
 		}
@@ -38,7 +39,8 @@ func listenToSearch(m model) tea.Cmd {
 	}
 }
 
-// Receives directories from model channel
+// Receives directory from model channel.
+// Call again to keep receiving messages
 func waitForDirectory(sub chan fs.DirEntry) tea.Cmd {
 	return func() tea.Msg {
 		e := <-sub

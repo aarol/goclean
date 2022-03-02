@@ -12,13 +12,25 @@ import (
 func main() {
 
 	app := cli.NewApp()
-	app.Name = "Goclean"
-	app.Usage = "Clean up your filesystem"
+	app.Name = "goclean"
+	app.Usage = "clean up your filesystem"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "exclude, e",
 			Value: "node_modules .git",
-			Usage: "Space separated list of directories to exclude searching into",
+			Usage: "space separated list of directories to exclude searching into",
+		},
+		cli.BoolFlag{
+			Name:  "all, a",
+			Usage: "include hidden files",
+		},
+		cli.BoolFlag{
+			Name:  "home",
+			Usage: "search from user home instead of current working directory",
+		},
+		cli.BoolFlag{
+			Name:  "debug, d",
+			Usage: "will be written to debug.log",
 		},
 	}
 	app.UsageText = "goclean.exe [options] [directories to search for]"
@@ -26,12 +38,13 @@ func main() {
 		if len(c.Args()) == 0 {
 			return errors.New("no directories to search")
 		}
-
-		f, err := tea.LogToFile("debug.log", "")
-		if err != nil {
-			return err
+		if c.Bool("debug") {
+			f, err := tea.LogToFile("debug.log", "")
+			if err != nil {
+				return err
+			}
+			defer f.Close()
 		}
-		defer f.Close()
 
 		p := tea.NewProgram(initialModel(c), tea.WithAltScreen())
 		m, err := p.StartReturningModel()

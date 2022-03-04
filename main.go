@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
+	"log"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -44,6 +46,8 @@ func main() {
 				return err
 			}
 			defer f.Close()
+		} else {
+			log.SetOutput(io.Discard)
 		}
 
 		p := tea.NewProgram(initialModel(c), tea.WithAltScreen())

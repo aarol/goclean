@@ -55,7 +55,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-
+		// hack to return bytes saved after program finishes
 		return fmt.Errorf("space saved: %s", HumanizeBytes(m.(model).bytesSaved))
 	}
 	err := app.Run(os.Args)

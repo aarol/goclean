@@ -83,6 +83,8 @@ func (m model) headerView() string {
 
 	s := lipgloss.JoinHorizontal(lipgloss.Top, search, cleaned)
 
+	s += boldTextStyle.Render("\nPress SPACE to delete directory")
+
 	return headerStyle.Render(s)
 }
 

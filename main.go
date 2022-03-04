@@ -30,7 +30,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:  "debug, d",
-			Usage: "will be written to debug.log",
+			Usage: "will be written to debug.log in current working directory",
 		},
 	}
 	app.UsageText = "goclean.exe [options] [directories to search for]"

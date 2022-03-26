@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -24,7 +23,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:  "all, a",
-			Usage: "include hidden files",
+			Usage: "include hidden directories",
 		},
 		cli.BoolFlag{
 			Name:  "home",
@@ -35,10 +34,11 @@ func main() {
 			Usage: "will be written to debug.log in current working directory",
 		},
 	}
-	app.UsageText = "goclean.exe [options] [directories to search for]"
+	app.UsageText = "goclean [options] [directories to search for]"
 	app.Action = func(c *cli.Context) error {
 		if len(c.Args()) == 0 {
-			return errors.New("no directories to search")
+			// if no arguments, show help message
+			return cli.ShowAppHelp(c)
 		}
 		if c.Bool("debug") {
 			f, err := tea.LogToFile("debug.log", "")
@@ -55,8 +55,9 @@ func main() {
 		if err != nil {
 			return err
 		}
-		// hack to return bytes saved after program finishes
-		return fmt.Errorf("space saved: %s", HumanizeBytes(m.(model).bytesSaved))
+		// Print out bytes saved when exiting
+		savedStr := fmt.Sprintf("Space saved: %s", HumanizeBytes(m.(model).bytesSaved))
+		return cli.NewExitError(savedStr, 0)
 	}
 	err := app.Run(os.Args)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 type model struct {
@@ -57,7 +57,7 @@ func initialModel(c *cli.Context) model {
 	return model{
 		searchPath:  path,
 		searchAll:   c.Bool("all"),
-		searchDirs:  c.Args(),
+		searchDirs:  c.Args().Slice(),
 		excludeDirs: strings.Split(c.String("exclude"), " "),
 
 		directories: []fs.DirEntry{},

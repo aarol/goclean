@@ -60,16 +60,14 @@ func removeDirectory(index int, path string) tea.Cmd {
 
 // Keeps cursor visible on viewport, and inside bounds
 func (m *model) checkPrimaryViewportBounds() {
-	// Vertical scroll position of viewport
+	// Offset from top of viewport
 	top := m.viewport.YOffset
 	// Last position visible in viewport
 	bottom := m.viewport.Height + top - 1
-
 	if m.cursor < top {
 		m.viewport.LineUp(1)
 	} else if m.cursor > bottom {
 		// For some reason it still scrolls down once at the last index
-		// Needs further investigating
 		m.viewport.LineDown(1)
 	}
 
@@ -92,12 +90,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Up):
 			m.cursor--
 			m.checkPrimaryViewportBounds()
-			m.viewport.SetContent(viewportContents(m))
+			m.updateViewport()
 
 		case key.Matches(msg, m.keys.Down):
 			m.cursor++
 			m.checkPrimaryViewportBounds()
-			m.viewport.SetContent(viewportContents(m))
+			m.updateViewport()
 
 		case key.Matches(msg, m.keys.Delete):
 			// Check if cursor in bounds (don't allow when count of directories is 0)
@@ -105,6 +103,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor < len(m.directories) && !m.directories[m.cursor].DeletionInProgress {
 
 				m.directories[m.cursor].DeletionInProgress = true
+				m.updateViewport()
 				return m, removeDirectory(m.cursor, m.directories[m.cursor].Path)
 			}
 
@@ -114,8 +113,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Recalculate viewport height, since help is now occupying more space
 			headerHeight := lipgloss.Height(m.headerView())
 			footerHeight := lipgloss.Height(m.footerView())
-			yMargin := headerHeight + footerHeight
-			m.viewport.Height = m.height - yMargin
+			m.viewport.Height = m.height - headerHeight - footerHeight
 		}
 
 	case tea.WindowSizeMsg:
@@ -127,7 +125,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			yMargin := headerHeight + footerHeight
 			// Viewport occupies maximum height
 			m.viewport = viewport.New(msg.Width, msg.Height-yMargin)
-			m.viewport.SetContent(viewportContents(m))
+			m.updateViewport()
 			// Help needs the width for truncating
 			// Otherwise renders nothing
 			m.help.Width = msg.Width
@@ -137,7 +135,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case fs.DirEntry:
 		m.directories = append(m.directories, msg)
-		m.viewport.SetContent(viewportContents(m))
+		m.updateViewport()
+		// Request another directory
 		return m, waitForDirectory(m.sub)
 
 	case finishedMsg:
@@ -146,7 +145,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case deletedMsg:
 		m.directories[msg].Deleted = true
 		m.bytesSaved += m.directories[msg].Size
-		m.viewport.SetContent(viewportContents(m))
+		m.updateViewport()
 
 	case spinner.TickMsg:
 		if !m.searchFinished {

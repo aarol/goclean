@@ -118,20 +118,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		// Terminal dimensions are sent asynchronously
+		m.height = msg.Height
+		headerHeight := lipgloss.Height(m.headerView())
+		footerHeight := lipgloss.Height(m.footerView())
+		availableHeight := m.height - headerHeight - footerHeight
+		// Initialize viewport
 		if !m.viewportReady {
-			m.height = msg.Height
-			headerHeight := lipgloss.Height(m.headerView())
-			footerHeight := lipgloss.Height(m.footerView())
-			yMargin := headerHeight + footerHeight
 			// Viewport occupies maximum height
-			m.viewport = viewport.New(msg.Width, msg.Height-yMargin)
-			m.updateViewport()
-			// Help needs the width for truncating
-			// Otherwise renders nothing
-			m.help.Width = msg.Width
-
+			m.viewport = viewport.New(msg.Width, availableHeight)
 			m.viewportReady = true
+		} else {
+			m.viewport.Height = availableHeight
+			m.viewport.Width = msg.Width
 		}
+		m.updateViewport()
+
+		// Help needs the width for truncating
+		// Otherwise renders nothing
+		m.help.Width = msg.Width
 
 	case fs.DirEntry:
 		m.directories = append(m.directories, msg)

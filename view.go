@@ -16,37 +16,47 @@ var (
 
 	boldTextStyle = lipgloss.NewStyle().Bold(true)
 
-	selectedPathStyle   = boldTextStyle.Copy().Background(lipgloss.Color("205")).Foreground(lipgloss.Color("#000"))
-	unselectedPathStyle = boldTextStyle.Copy()
+	selectedPathStyle   = lipgloss.NewStyle().Background(lipgloss.Color("205")).Foreground(lipgloss.Color("#000"))
+	unselectedPathStyle = lipgloss.NewStyle()
 
-	deletedIconStyle  = lipgloss.NewStyle().Background(lipgloss.Color("205")).MarginRight(1)
-	existingIconStyle = lipgloss.NewStyle().Background(lipgloss.Color("121")).MarginRight(1)
+	iconStyle         = lipgloss.NewStyle().MarginRight(1)
+	deletedIconStyle  = iconStyle.Copy().Background(lipgloss.Color("205"))
+	deletingIconStyle = iconStyle.Copy().Background(lipgloss.Color("214"))
+	aliveIconStyle    = iconStyle.Copy().Background(lipgloss.Color("121"))
 
 	footerStyle = lipgloss.NewStyle().Margin(1, 0)
 )
+
+// Updates viewport with the data in model
+func (m *model) updateViewport() {
+	m.viewport.SetContent(viewportContents(*m))
+}
 
 func viewportContents(m model) string {
 	s := ""
 	var pathStyle lipgloss.Style
 	var sizeStyle lipgloss.Style
+	var boxStyle lipgloss.Style
+
 	for i, file := range m.directories {
-		var boxStyle lipgloss.Style
 		// Box on the left of path
 		if file.Deleted {
 			boxStyle = deletedIconStyle
+		} else if file.DeletionInProgress {
+			boxStyle = deletingIconStyle
 		} else {
-			boxStyle = existingIconStyle
+			boxStyle = aliveIconStyle
 		}
+
 		if i == m.cursor {
 			pathStyle = selectedPathStyle
-			sizeStyle = selectedPathStyle
+			sizeStyle = selectedPathStyle.Bold(true)
 		} else {
 			pathStyle = unselectedPathStyle
 			sizeStyle = unselectedPathStyle.Copy().
+				Bold(true).
 				Foreground(ColorFromSize(file.Size))
 		}
-		// Set boldness to true if file not deleted
-		pathStyle.Bold(!file.Deleted)
 
 		box := boxStyle.Render(" ")
 

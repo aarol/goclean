@@ -53,7 +53,7 @@ func Delete(path string) error {
 // Recursively search every file and return the total sum
 func getDirectorySize(path string) (int64, error) {
 	var size int64
-	err := filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(path, func(_ string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}

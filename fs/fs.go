@@ -1,12 +1,6 @@
 package fs
 
-import (
-	"io/fs"
-	"log"
-	"os"
-	"path/filepath"
-	"strings"
-)
+import "time"
 
 type DirEntry struct {
 	Path               string
@@ -15,68 +9,30 @@ type DirEntry struct {
 	DeletionInProgress bool
 }
 
-func Traverse(dir string, searchDirs, ignoreDirs []string, searchAll bool, ch chan DirEntry) {
-	defer close(ch)
+const (
+	kb = 1024
+	mb = kb * 1024
+	gb = mb * 1024
+	tb = gb * 1024
+)
 
-	// Scan the file tree starting from current working directory
-	// Don't return err because it stops the walk
-	// Instead just log it and skip the directory
-	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			log.Println(err)
-			return filepath.SkipDir
-		}
-		if d.IsDir() {
-			if contains(searchDirs, d.Name()) {
-				size, err := getDirectorySize(path)
-				if err != nil {
-					log.Println(err)
-					return filepath.SkipDir
-				}
-				ch <- DirEntry{Path: path, Size: size}
-				return filepath.SkipDir
-			}
-			if contains(ignoreDirs, d.Name()) ||
-				(strings.HasPrefix(d.Name(), ".") && !searchAll) {
-				log.Println("Skipping ", path)
-				return filepath.SkipDir
-			}
-		}
-		return err
-	})
+var dirs = []DirEntry{
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\old\\build", Size: 3 * kb},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\blog\\build", Size: 19 * mb},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\practise\\build", Size: 1 * gb},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\example\\build", Size: 3 * gb},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\blog-old\\build", Size: 0},
+	{Path: "C:\\Users\\aarol\\Documents\\Code\\projects\\website\\build", Size: 600 * kb},
+}
+
+func Traverse(searchPath string, searchDirs, ignoreDirs []string, searchAll bool, ch chan DirEntry) {
+	defer close(ch)
+	for _, dir := range dirs {
+		ch <- dir
+	}
 }
 
 func Delete(path string) error {
-	return os.RemoveAll(path)
-}
-
-// Recursively search every file and return the total sum
-func getDirectorySize(path string) (int64, error) {
-	var size int64
-	err := filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() {
-			info, err := d.Info()
-			if err != nil {
-				return err
-			}
-			size += info.Size()
-		}
-		return err
-	})
-	if err != nil {
-		return 0, err
-	}
-	return size, nil
-}
-
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
+	time.Sleep(2 * time.Second)
+	return nil
 }

@@ -33,8 +33,8 @@ var keys = keyMap{
 		key.WithHelp("↓/j", "move down"),
 	),
 	Delete: key.NewBinding(
-		key.WithKeys(" ", "delete", "enter"),
-		key.WithHelp("space/delete/enter", "delete highlighted item"),
+		key.WithKeys("delete", "enter"),
+		key.WithHelp("delete/enter", "delete highlighted item"),
 	),
 	Help: key.NewBinding(
 		key.WithKeys("?"),

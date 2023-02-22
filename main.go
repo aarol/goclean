@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-
 	app := cli.NewApp()
 	app.Name = "goclean"
 	app.Usage = "clean up your filesystem"
@@ -53,11 +52,11 @@ func main() {
 		}
 
 		p := tea.NewProgram(initialModel(c), tea.WithAltScreen())
-		m, err := p.StartReturningModel()
+		m, err := p.Run()
 		if err != nil {
 			return err
 		}
-		// Print out bytes saved when exiting
+
 		savedStr := fmt.Sprintf("Space saved: %s", HumanizeBytes(m.(model).bytesSaved))
 		return cli.Exit(savedStr, 0)
 	}

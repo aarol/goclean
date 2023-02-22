@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 
-	"github.com/aarol/goclean/fs"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -29,9 +28,9 @@ func listenToSearch(m model) tea.Cmd {
 	return func() tea.Msg {
 		// Channel receives results, then immediately sends them to model channel
 		// Traverse will close the channel, so that we're able to send finishedMsg
-		ch := make(chan fs.DirEntry)
+		ch := make(chan DirEntry)
 
-		go fs.Traverse(m.searchPath, m.searchDirs, m.excludeDirs, m.searchAll, ch)
+		go Traverse(m.searchPath, m.searchDirs, m.excludeDirs, m.searchAll, ch)
 		for v := range ch {
 			m.sub <- v
 		}
@@ -41,7 +40,7 @@ func listenToSearch(m model) tea.Cmd {
 
 // Receives directory from model channel.
 // Call again to keep receiving messages
-func waitForDirectory(sub chan fs.DirEntry) tea.Cmd {
+func waitForDirectory(sub chan DirEntry) tea.Cmd {
 	return func() tea.Msg {
 		e := <-sub
 		return e
@@ -50,7 +49,7 @@ func waitForDirectory(sub chan fs.DirEntry) tea.Cmd {
 
 func removeDirectory(index int, path string) tea.Cmd {
 	return func() tea.Msg {
-		err := fs.Delete(path)
+		err := Delete(path)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -137,7 +136,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Otherwise renders nothing
 		m.help.Width = msg.Width
 
-	case fs.DirEntry:
+	case DirEntry:
 		m.directories = append(m.directories, msg)
 		m.updateViewport()
 		// Request another directory

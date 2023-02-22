@@ -64,13 +64,12 @@ func viewportContents(m model) string {
 
 		directoryWidth := m.viewport.Width - lipgloss.Width(fileSize) - lipgloss.Width(box)
 
-		directoryItem :=
-			pathStyle.Copy().
-				Width(directoryWidth).
-				Render(
-					truncate.StringWithTail(
-						file.Path, uint(directoryWidth), "..."),
-				)
+		directoryItem := pathStyle.Copy().
+			Width(directoryWidth).
+			Render(
+				truncate.StringWithTail(
+					file.Path, uint(directoryWidth), "..."),
+			)
 
 		row := lipgloss.JoinHorizontal(lipgloss.Top, box, directoryItem, fileSize)
 
@@ -93,7 +92,7 @@ func (m model) headerView() string {
 
 	s := lipgloss.JoinHorizontal(lipgloss.Top, search, cleaned)
 
-	s += boldTextStyle.Render("\nPress SPACE to delete directory")
+	s += boldTextStyle.Render("\nPress DELETE/ENTER to delete directory")
 
 	return headerStyle.Render(s)
 }

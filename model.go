@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/aarol/goclean/fs"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -27,8 +26,8 @@ type model struct {
 	searchFinished bool
 	bytesSaved     int64
 
-	directories []fs.DirEntry
-	sub         chan fs.DirEntry // Will receive directories from fs
+	directories []DirEntry
+	sub         chan DirEntry // Will receive directories from fs
 
 	keys     keyMap
 	viewport viewport.Model
@@ -37,7 +36,6 @@ type model struct {
 }
 
 func initialModel(c *cli.Context) model {
-
 	// Get search path
 	var path string
 	var err error
@@ -58,10 +56,10 @@ func initialModel(c *cli.Context) model {
 		searchPath:  path,
 		searchAll:   c.Bool("all"),
 		searchDirs:  c.Args().Slice(),
-		excludeDirs: strings.Split(c.String("exclude"), " "),
+		excludeDirs: strings.Split(c.String("exclude"), ","),
 
-		directories: []fs.DirEntry{},
-		sub:         make(chan fs.DirEntry),
+		directories: []DirEntry{},
+		sub:         make(chan DirEntry),
 
 		keys:    keys,
 		help:    help.New(),

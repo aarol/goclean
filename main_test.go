@@ -3,7 +3,6 @@ package main
 import (
 	"testing"
 
-	"github.com/aarol/goclean/fs"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -38,7 +37,7 @@ func TestWindowResize(t *testing.T) {
 
 func TestDirectoryUpdate(t *testing.T) {
 	m := model{}
-	n, cmd := m.Update(fs.DirEntry{})
+	n, cmd := m.Update(DirEntry{})
 	if len(n.(model).directories) != 1 {
 		t.Fatalf(`directories length is %d, want 1`, len(n.(model).directories))
 	}

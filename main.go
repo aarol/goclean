@@ -27,10 +27,6 @@ func main() {
 			Usage:   "list all directories, including hidden directories",
 		},
 		&cli.BoolFlag{
-			Name:  "home",
-			Usage: "search from user home instead of current working directory",
-		},
-		&cli.BoolFlag{
 			Name:  "debug",
 			Usage: "will be written to debug.log in current working directory",
 		},
@@ -57,7 +53,7 @@ func main() {
 			return err
 		}
 
-		savedStr := fmt.Sprintf("Space saved: %s", HumanizeBytes(m.(model).bytesSaved))
+		savedStr := fmt.Sprintf("Cleaned: %s", HumanizeBytes(m.(model).bytesSaved))
 		return cli.Exit(savedStr, 0)
 	}
 	err := app.Run(os.Args)

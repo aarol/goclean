@@ -36,14 +36,7 @@ type model struct {
 }
 
 func initialModel(c *cli.Context) model {
-	// Get search path
-	var path string
-	var err error
-	if c.Bool("home") {
-		path, err = os.UserHomeDir()
-	} else {
-		path, err = os.Getwd()
-	}
+	path, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}

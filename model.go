@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type model struct {
@@ -41,9 +41,10 @@ func initialModel(c *cli.Context) model {
 		log.Fatal(err)
 	}
 
-	s := spinner.NewModel()
-	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	s := spinner.New(
+		spinner.WithSpinner(spinner.Dot),
+		spinner.WithStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("205"))),
+	)
 
 	return model{
 		searchPath:  path,

@@ -4,7 +4,7 @@
 
 <img title="" src="resource/screenshot.png" alt="Screenshot" data-align="center">
 
-Goclean is written in Go, using the beautiful [bubbletea](https://github.com/charmbracelet/bubbletea) framework.
+Goclean is written in Go, using the [bubbletea](https://github.com/charmbracelet/bubbletea) framework.
 
 --- 
 
@@ -12,22 +12,14 @@ Goclean is written in Go, using the beautiful [bubbletea](https://github.com/cha
 
 2. Press <kbd>space</kbd>/<kbd>delete</kbd> to delete the directory
 
-3. Enjoy all the precious bits you saved 
-
-### Reasons to use goclean:
-
-- Get rid of space wasted by old build files
-
-- Quickly delete unused folders
-
-- Compress project files for backups etc.
+3. Press <kbd>Q</kbd> to quit when you're done
 
 ### Installation
 
-Go 1.17+ is required. [Install go here](https://go.dev/doc/install)
+Go 1.20+ is required. [Install go here](https://go.dev/doc/install)
 
 ```bash
-$ go install github.com/aarol/goclean@latest
+go install github.com/aarol/goclean@latest
 ```
 
 This should build the program for your system. It should also add it to your $PATH.
@@ -35,12 +27,11 @@ This should build the program for your system. It should also add it to your $PA
 ## Usage
 
 ```bash
-$ goclean <dir> (dir2 dir3...)
+goclean <dir> (dir2 dir3...)
 ```
 
 ### Options
 
 * `-e`,`--exclude "<dir> (dir2...)"`: Exclude directories from search
 * `-a`,`--all`: Include hidden directories (directories starting with ".")
-* `--home`: Start search from "$HOME" instead of current working directory
 * `-d`,`--debug`: Write debug.log to the current working directory

@@ -34,4 +34,3 @@ goclean <dir> (dir2 dir3...)
 
 * `-e`,`--exclude "<dir> (dir2...)"`: Exclude directories from search
 * `-a`,`--all`: Include hidden directories (directories starting with ".")
-* `-d`,`--debug`: Write debug.log to the current working directory

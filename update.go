@@ -87,9 +87,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Delete):
 			// Check if cursor in bounds (don't allow when count of directories is 0)
 			// Also don't delete if done already
-			if m.cursor < len(m.directories) && !m.directories[m.cursor].DeletionInProgress {
+			if m.cursor < len(m.directories) && m.directories[m.cursor].Status == Alive {
 
-				m.directories[m.cursor].DeletionInProgress = true
+				m.directories[m.cursor].Status = DeletionInProgress
 				m.updateViewport()
 				return m, m.removeDirectory(m.cursor, m.directories[m.cursor].Path)
 			}
@@ -134,7 +134,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.searchFinished = true
 
 	case deletedMsg:
-		m.directories[msg].Deleted = true
+		m.directories[msg].Status = Deleted
 		m.bytesSaved += m.directories[msg].Size
 		m.updateViewport()
 

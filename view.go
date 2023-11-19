@@ -34,11 +34,12 @@ func (m *model) updateViewport() {
 
 	for i, file := range m.directories {
 		// Box on the left of path
-		if file.Deleted {
+		switch file.Status {
+		case Deleted:
 			boxStyle = deletedIconStyle
-		} else if file.DeletionInProgress {
+		case DeletionInProgress:
 			boxStyle = deletingIconStyle
-		} else {
+		case Alive:
 			boxStyle = aliveIconStyle
 		}
 

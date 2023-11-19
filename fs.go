@@ -12,11 +12,18 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+type EntryStatus int
+
+const (
+	Alive EntryStatus = iota
+	DeletionInProgress
+	Deleted
+)
+
 type DirEntry struct {
-	Path               string
-	Size               int64
-	Deleted            bool
-	DeletionInProgress bool
+	Path   string
+	Size   int64
+	Status EntryStatus
 }
 
 type FsHandler struct {
@@ -24,7 +31,7 @@ type FsHandler struct {
 	directoriesToFind   []string
 	directoriesToIgnore []string
 	searchAll           bool
-	isDryRun            bool
+	shouldFakeEntries   bool
 }
 
 func NewFsHandler(c *cli.Context) *FsHandler {
@@ -33,18 +40,23 @@ func NewFsHandler(c *cli.Context) *FsHandler {
 		searchAll:           c.Bool("all"),
 		directoriesToFind:   c.Args().Slice(),
 		directoriesToIgnore: c.StringSlice("exclude"),
-		isDryRun:            c.Bool("dry-run"),
+		shouldFakeEntries:   c.Bool("fake-entries"),
 	}
 }
 
 func (h *FsHandler) Traverse() {
 	defer close(h.Entries)
 
-	if h.isDryRun {
+	if h.shouldFakeEntries {
 		for _, e := range []DirEntry{
-			{Path: "test/asd", Size: 2 * gb},
-			{Path: "test/asd2", Size: 500 * mb},
-			{Path: "test/asd3", Size: 10 * kb},
+			{Path: "js/vault/node_modules", Size: 2 * gb},
+			{Path: "rust/sim/target", Size: 500 * mb},
+			{Path: "flutter/app/build", Size: 980 * mb},
+			{Path: "flutter/app/.dart_tool", Size: 980 * mb},
+			{Path: "js/react_app/node_modules", Size: 1200 * mb},
+			{Path: "dart/server/build", Size: 10 * kb},
+			{Path: "dart/server/.dart_tool", Size: 10 * kb},
+			{Path: "rust/server/target", Size: 600 * mb},
 		} {
 			time.Sleep(500 * time.Millisecond)
 			h.Entries <- e
@@ -82,7 +94,7 @@ func (h *FsHandler) Traverse() {
 }
 
 func (h *FsHandler) Delete(path string) error {
-	if h.isDryRun {
+	if h.shouldFakeEntries {
 		time.Sleep(500 * time.Millisecond)
 		return nil
 	}

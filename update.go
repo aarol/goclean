@@ -16,40 +16,28 @@ type finishedMsg struct{}
 type deletedMsg (int)
 
 func (m model) Init() tea.Cmd {
+	go m.FsHandler.Traverse()
+
 	return tea.Batch(
-		listenToSearch(m),
-		waitForDirectory(m.sub),
+		m.waitForNewEntry,
 		m.spinner.Tick,
 	)
 }
 
-// Will return finishedMsg when completed search
-func listenToSearch(m model) tea.Cmd {
-	return func() tea.Msg {
-		// Channel receives results, then immediately sends them to model channel
-		// Traverse will close the channel, so that we're able to send finishedMsg
-		ch := make(chan DirEntry)
-
-		go Traverse(m.searchPath, m.searchDirs, m.excludeDirs, m.searchAll, ch)
-		for v := range ch {
-			m.sub <- v
-		}
+// Command to receive directory from fs handler.
+// Call again to keep receiving messages and run the update function
+func (m *model) waitForNewEntry() tea.Msg {
+	e, ok := <-m.FsHandler.Entries
+	if !ok {
+		// closed (no more entries)
 		return finishedMsg{}
 	}
+	return e
 }
 
-// Receives directory from model channel.
-// Call again to keep receiving messages
-func waitForDirectory(sub chan DirEntry) tea.Cmd {
+func (m *model) removeDirectory(index int, path string) tea.Cmd {
 	return func() tea.Msg {
-		e := <-sub
-		return e
-	}
-}
-
-func removeDirectory(index int, path string) tea.Cmd {
-	return func() tea.Msg {
-		err := Delete(path)
+		err := m.FsHandler.Delete(path)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -103,7 +91,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				m.directories[m.cursor].DeletionInProgress = true
 				m.updateViewport()
-				return m, removeDirectory(m.cursor, m.directories[m.cursor].Path)
+				return m, m.removeDirectory(m.cursor, m.directories[m.cursor].Path)
 			}
 
 		case key.Matches(msg, m.keys.Help):
@@ -139,8 +127,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case DirEntry:
 		m.directories = append(m.directories, msg)
 		m.updateViewport()
-		// Request another directory
-		return m, waitForDirectory(m.sub)
+		// Request another entry
+		return m, m.waitForNewEntry
 
 	case finishedMsg:
 		m.searchFinished = true

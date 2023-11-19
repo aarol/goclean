@@ -23,17 +23,11 @@ var (
 	deletedIconStyle  = iconStyle.Copy().Background(lipgloss.Color("205"))
 	deletingIconStyle = iconStyle.Copy().Background(lipgloss.Color("214"))
 	aliveIconStyle    = iconStyle.Copy().Background(lipgloss.Color("121"))
-
-	footerStyle = lipgloss.NewStyle().Margin(1, 0)
 )
 
 // Updates viewport with the data in model
 func (m *model) updateViewport() {
-	m.viewport.SetContent(viewportContents(*m))
-}
-
-func viewportContents(m model) string {
-	s := ""
+	var s strings.Builder
 	var pathStyle lipgloss.Style
 	var sizeStyle lipgloss.Style
 	var boxStyle lipgloss.Style
@@ -73,15 +67,15 @@ func viewportContents(m model) string {
 
 		row := lipgloss.JoinHorizontal(lipgloss.Top, box, directoryItem, fileSize)
 
-		s += fmt.Sprintln(row)
+		s.WriteString(row)
 	}
-	return s
+	m.viewport.SetContent(s.String())
 }
 
 func (m model) headerView() string {
 	var search string
 	if !m.searchFinished {
-		dirs := strings.Join(m.searchDirs, ", ")
+		dirs := strings.Join(m.FsHandler.directoriesToFind, ", ")
 		search = searchStyle.Render(fmt.Sprintf("%s Scanning directories %s • ", m.spinner.View(), dirs))
 	} else {
 		s := fmt.Sprintf("Found %d directories • ", len(m.directories))
@@ -96,6 +90,8 @@ func (m model) headerView() string {
 
 	return headerStyle.Render(s)
 }
+
+var footerStyle = lipgloss.NewStyle().Margin(1, 0)
 
 func (m model) footerView() string {
 	return footerStyle.Render(m.help.View(m.keys))

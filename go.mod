@@ -1,6 +1,6 @@
 module github.com/aarol/goclean
 
-go 1.17
+go 1.21
 
 require (
 	github.com/charmbracelet/bubbles v0.16.1

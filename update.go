@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"os"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -14,6 +14,11 @@ type finishedMsg struct{}
 
 // Index of deleted directory
 type deletedMsg (int)
+
+type errorMsg struct {
+	index    int
+	errorMsg string
+}
 
 func (m model) Init() tea.Cmd {
 	go m.FsHandler.Traverse()
@@ -39,7 +44,11 @@ func (m *model) removeDirectory(index int, path string) tea.Cmd {
 	return func() tea.Msg {
 		err := m.FsHandler.Delete(path)
 		if err != nil {
-			log.Fatal(err)
+			patherr := err.(*os.PathError)
+			return errorMsg{
+				index:    index,
+				errorMsg: patherr.Error(),
+			}
 		}
 		return deletedMsg(index)
 	}
@@ -136,6 +145,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case deletedMsg:
 		m.directories[msg].Status = Deleted
 		m.bytesSaved += m.directories[msg].Size
+		m.updateViewport()
+
+	case errorMsg:
+		m.directories[msg.index].Status = Error
+		m.directories[msg.index].ErrorMsg = msg.errorMsg
 		m.updateViewport()
 
 	case spinner.TickMsg:

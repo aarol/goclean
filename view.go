@@ -41,6 +41,8 @@ func (m *model) updateViewport() {
 			boxStyle = deletingIconStyle
 		case Alive:
 			boxStyle = aliveIconStyle
+		case Error:
+			boxStyle = lipgloss.NewStyle().MarginRight(1).Background(lipgloss.Color("#ff0000"))
 		}
 
 		if i == m.cursor {
@@ -59,13 +61,22 @@ func (m *model) updateViewport() {
 
 		directoryWidth := m.viewport.Width - lipgloss.Width(fileSize) - lipgloss.Width(box)
 
-		directoryItem := pathStyle.Copy().
-			Width(directoryWidth).
-			Render(
-				truncate.StringWithTail(
-					file.Path, uint(directoryWidth), "..."),
-			)
+		var directoryItem string
 
+		if file.Status == Error {
+			directoryItem = pathStyle.Copy().
+				Width(directoryWidth).
+				Render(truncate.StringWithTail(
+					file.ErrorMsg, uint(directoryWidth), "..."),
+				)
+		} else {
+			directoryItem = pathStyle.Copy().
+				Width(directoryWidth).
+				Render(
+					truncate.StringWithTail(
+						file.Path, uint(directoryWidth), "..."),
+				)
+		}
 		row := lipgloss.JoinHorizontal(lipgloss.Top, box, directoryItem, fileSize)
 
 		fmt.Fprintln(&s, row)

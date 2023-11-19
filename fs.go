@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io/fs"
 	"log"
 	"os"
@@ -18,12 +19,14 @@ const (
 	Alive EntryStatus = iota
 	DeletionInProgress
 	Deleted
+	Error
 )
 
 type DirEntry struct {
-	Path   string
-	Size   int64
-	Status EntryStatus
+	Path     string
+	Size     int64
+	Status   EntryStatus
+	ErrorMsg string
 }
 
 type FsHandler struct {
@@ -96,8 +99,13 @@ func (h *FsHandler) Traverse() {
 func (h *FsHandler) Delete(path string) error {
 	if h.shouldFakeEntries {
 		time.Sleep(500 * time.Millisecond)
-		return nil
+		return &os.PathError{
+			Op:   "remove",
+			Path: path,
+			Err:  errors.New("no such file"),
+		}
 	}
+
 	return os.RemoveAll(path)
 }
 

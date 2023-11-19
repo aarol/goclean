@@ -22,7 +22,7 @@ Go 1.20+ is required. [Install go here](https://go.dev/doc/install)
 go install github.com/aarol/goclean@latest
 ```
 
-This should build the program for your system. It should also add it to your $PATH.
+This should build the program for your system. You should also add add "$(go env GOPATH)/bin" to your $PATH for this command to be accessible anywhere on your system.
 
 ## Usage
 
@@ -32,5 +32,5 @@ goclean <dir> (dir2 dir3...)
 
 ### Options
 
-* `-e`,`--exclude "<dir> (dir2...)"`: Exclude directories from search
+* `-e`,`--exclude "<dir> (dir2...)"`: Exclude directories from search (default: node_modules, .git)
 * `-a`,`--all`: Include hidden directories (directories starting with ".")

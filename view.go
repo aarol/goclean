@@ -68,7 +68,7 @@ func (m *model) updateViewport() {
 
 		row := lipgloss.JoinHorizontal(lipgloss.Top, box, directoryItem, fileSize)
 
-		s.WriteString(row)
+		fmt.Fprintln(&s, row)
 	}
 	m.viewport.SetContent(s.String())
 }
